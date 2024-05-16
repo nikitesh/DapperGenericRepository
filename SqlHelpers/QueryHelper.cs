@@ -3,7 +3,7 @@ using System.Text;
 
 namespace DapperGenericRepository.SqlHelpers
 {
-    public static class SqlQueryHelper
+    public static class QueryHelper
     {
         public static string Where<T>(StringBuilder sqlBuilder, Expression<Func<T, bool>> predicate, ref IDictionary<string, object> dictionaryParams)
             where T : class

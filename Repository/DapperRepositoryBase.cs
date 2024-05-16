@@ -4,6 +4,7 @@ using DapperGenericRepository.CustomAttributes;
 using DapperGenericRepository.IRepository;
 using DapperGenericRepository.SqlHelpers;
 using FastMember;
+using Oracle.ManagedDataAccess.Client;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
@@ -31,7 +32,7 @@ namespace DapperGenericRepository.Repository
         /// <param name="columnNamppings"></param>
         public void BulkInsertData<T>(List<T> dataToSave, string[] storageParameters, string destinationTableName, List<SqlBulkCopyColumnMapping> columnNamppings)
         {
-            SqlConnection connection = new(_connectionString);
+            OracleConnection connection = new(_connectionString);
             SqlBulkCopy bulkCopy = new(connection.ConnectionString, SqlBulkCopyOptions.Default)
             {
                 DestinationTableName = destinationTableName,
@@ -53,7 +54,7 @@ namespace DapperGenericRepository.Repository
         public virtual bool Delete<T>(T obj)
             where T : class
         {
-            SqlConnection connection = new(_connectionString);
+            OracleConnection connection = new(_connectionString);
             return connection.Delete<T>(obj);
         }
         public void DeleteByParam<T>(Expression<Func<T, bool>> predicate) where T : class
@@ -62,8 +63,8 @@ namespace DapperGenericRepository.Repository
             StringBuilder sqlBuilder = new();
             _ = sqlBuilder.Append(DapperHelpers.GenerateDeleteQuery<T>());
             _ = sqlBuilder.Append(" where ");
-            _ = SqlQueryHelper.Where<T>(sqlBuilder, predicate, ref dictionaryParams);
-            SqlConnection connection = new(_connectionString);
+            _ = QueryHelper.Where<T>(sqlBuilder, predicate, ref dictionaryParams);
+            OracleConnection connection = new(_connectionString);
             _ = connection.Execute(sqlBuilder.ToString().Trim(), dictionaryParams);
 
         }
@@ -84,7 +85,7 @@ namespace DapperGenericRepository.Repository
             if (disposing)
             {
                 // Dispose managed state (managed objects).
-                //_safeHandle?.Dispose();
+                //_safeHandle?.Dispose();                
             }
 
             _disposed = true;
@@ -95,7 +96,7 @@ namespace DapperGenericRepository.Repository
         /// </summary>
         public virtual int Execute(CommandType commandType, string sql, object parameters = null)
         {
-            SqlConnection connection = new(_connectionString);
+            OracleConnection connection = new(_connectionString);
             return connection.Execute(sql, parameters, commandType: commandType);
         }
 
@@ -114,8 +115,8 @@ namespace DapperGenericRepository.Repository
             StringBuilder sqlBuilder = new();
             _ = sqlBuilder.Append(DapperHelpers.GenerateSelectQuery<T>());
             _ = sqlBuilder.Append(" where ");
-            _ = SqlQueryHelper.Where<T>(sqlBuilder, predicate, ref dictionaryParams);
-            SqlConnection connection = new(_connectionString);
+            _ = QueryHelper.Where<T>(sqlBuilder, predicate, ref dictionaryParams);
+            OracleConnection connection = new(_connectionString);
             return connection.QueryFirstOrDefault<T>(sqlBuilder.ToString().Trim(), dictionaryParams);
         }
 
@@ -129,8 +130,8 @@ namespace DapperGenericRepository.Repository
                 : sqlBuilder.Append(DapperHelpers.GenerateSelectQuery<T>(tableName));
 
             _ = sqlBuilder.Append(" where ");
-            _ = SqlQueryHelper.Where<T>(sqlBuilder, predicate, ref dictionaryParams);
-            SqlConnection connection = new(_connectionString);
+            _ = QueryHelper.Where<T>(sqlBuilder, predicate, ref dictionaryParams);
+            OracleConnection connection = new(_connectionString);
             return connection.Query<T>(sqlBuilder.ToString().Trim(), dictionaryParams);
         }
 
@@ -144,10 +145,10 @@ namespace DapperGenericRepository.Repository
             if (predicate != null)
             {
                 _ = sqlBuilder.Append(" AND ");
-                _ = SqlQueryHelper.Where<T>(sqlBuilder, predicate, ref dictionaryParams);
+                _ = QueryHelper.Where<T>(sqlBuilder, predicate, ref dictionaryParams);
             }
             dictionaryParams.Add("@field", list);
-            SqlConnection connection = new(_connectionString);
+            OracleConnection connection = new(_connectionString);
             return connection.Query<T>(sqlBuilder.ToString().Trim(), dictionaryParams);
         }
 
@@ -161,10 +162,10 @@ namespace DapperGenericRepository.Repository
             if (predicate != null)
             {
                 _ = sqlBuilder.Append(" AND ");
-                _ = SqlQueryHelper.Where<T>(sqlBuilder, predicate, ref dictionaryParams);
+                _ = QueryHelper.Where<T>(sqlBuilder, predicate, ref dictionaryParams);
             }
             dictionaryParams.Add("@field", list);
-            SqlConnection connection = new(_connectionString);
+            OracleConnection connection = new(_connectionString);
             return connection.Query<T>(sqlBuilder.ToString().Trim(), dictionaryParams);
         }
 
@@ -174,8 +175,8 @@ namespace DapperGenericRepository.Repository
             StringBuilder sqlBuilder = new();
             _ = sqlBuilder.Append(DapperHelpers.GenerateSelectQuery<T>(selectionFields));
             _ = sqlBuilder.Append(" where ");
-            _ = SqlQueryHelper.Where<T>(sqlBuilder, predicate, ref dictionaryParams);
-            SqlConnection connection = new(_connectionString);
+            _ = QueryHelper.Where<T>(sqlBuilder, predicate, ref dictionaryParams);
+            OracleConnection connection = new(_connectionString);
             return connection.Query<T>(sqlBuilder.ToString().Trim(), dictionaryParams);
         }
         public virtual T FindTop1ByOrder<T>(string CommaSeparatedColumnsForOrder, Expression<Func<T, bool>> predicate, bool isDesc = true)
@@ -185,14 +186,14 @@ namespace DapperGenericRepository.Repository
             StringBuilder sqlBuilder = new();
             _ = sqlBuilder.Append(DapperHelpers.GenerateSelectQuery<T>());
             _ = sqlBuilder.Append(" where ");
-            _ = SqlQueryHelper.Where<T>(sqlBuilder, predicate, ref dictionaryParams);
+            _ = QueryHelper.Where<T>(sqlBuilder, predicate, ref dictionaryParams);
             _ = sqlBuilder.Append(" ORDER BY ");
             _ = sqlBuilder.Append(CommaSeparatedColumnsForOrder);
             if (isDesc)
             {
                 _ = sqlBuilder.Append(" DESC");
             }
-            SqlConnection connection = new(_connectionString);
+            OracleConnection connection = new(_connectionString);
             return connection.QueryFirstOrDefault<T>(sqlBuilder.ToString().Trim(), dictionaryParams);
         }
         /// <summary>
@@ -200,7 +201,7 @@ namespace DapperGenericRepository.Repository
         /// </summary>
         public virtual IEnumerable<T> GetAll<T>() where T : class
         {
-            SqlConnection connection = new(_connectionString);
+            OracleConnection connection = new(_connectionString);
             return connection.GetAll<T>();
         }
 
@@ -209,13 +210,13 @@ namespace DapperGenericRepository.Repository
         /// </summary>
         public virtual T GetByIdInt<T>(int id) where T : class
         {
-            SqlConnection connection = new(_connectionString);
+            OracleConnection connection = new(_connectionString);
             return connection.Get<T>(id);
         }
 
         public virtual T GetByIdString<T>(string id) where T : class
         {
-            SqlConnection connection = new(_connectionString);
+            OracleConnection connection = new(_connectionString);
             return connection.Get<T>(id);
         }
 
@@ -224,7 +225,7 @@ namespace DapperGenericRepository.Repository
         /// </summary>
         public virtual T GetItem<T>(CommandType commandType, string sql, object parameters = null)
         {
-            SqlConnection connection = new(_connectionString);
+            OracleConnection connection = new(_connectionString);
             return connection.QueryFirstOrDefault<T>(sql, parameters, commandType: commandType);
         }
 
@@ -233,7 +234,7 @@ namespace DapperGenericRepository.Repository
         /// </summary>
         public virtual IEnumerable<T> GetItems<T>(CommandType commandType, string sql, object parameters = null)
         {
-            SqlConnection connection = new(_connectionString);
+            OracleConnection connection = new(_connectionString);
             return connection.Query<T>(sql, parameters, commandType: commandType);
         }
 
@@ -249,7 +250,7 @@ namespace DapperGenericRepository.Repository
         public virtual int Insert<T>(T obj)
             where T : class
         {
-            SqlConnection connection = new(_connectionString);
+            OracleConnection connection = new(_connectionString);
             return (int)connection.Insert(obj);
         }
 
@@ -266,7 +267,7 @@ namespace DapperGenericRepository.Repository
         /// </summary>
         public virtual IEnumerable<T> SelectAllByStoredProcedure<T>(string sql, object parameters = null)
         {
-            SqlConnection connection = new(_connectionString);
+            OracleConnection connection = new(_connectionString);
             return connection.Query<T>(sql, parameters, commandType: CommandType.StoredProcedure);
         }
 
@@ -275,7 +276,7 @@ namespace DapperGenericRepository.Repository
         /// </summary>
         public virtual T SelectByStoredProcedure<T>(string sql, object parameters = null)
         {
-            SqlConnection connection = new(_connectionString);
+            OracleConnection connection = new(_connectionString);
             return connection.QueryFirstOrDefault<T>(sql, parameters, commandType: CommandType.StoredProcedure);
         }
         public void SoftDelete<T>(T obj)
@@ -293,7 +294,7 @@ namespace DapperGenericRepository.Repository
         public virtual bool Update<T>(T obj)
             where T : class
         {
-            SqlConnection connection = new(_connectionString);
+            OracleConnection connection = new(_connectionString);
             return connection.Update<T>(obj);
         }
         private static string GetConnectionString()
@@ -316,8 +317,8 @@ namespace DapperGenericRepository.Repository
             }
             _ = sqlBuilder.Remove(sqlBuilder.Length - 1, 1);
             _ = sqlBuilder.Append(" where ");
-            _ = SqlQueryHelper.Where<T>(sqlBuilder, predicate, ref dictionaryParams);
-            SqlConnection connection = new(_connectionString);
+            _ = QueryHelper.Where<T>(sqlBuilder, predicate, ref dictionaryParams);
+            OracleConnection connection = new(_connectionString);
             return connection.Execute(sqlBuilder.ToString().Trim(), dictionaryParams) > 0;
         }
     }
